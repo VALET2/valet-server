@@ -37,7 +37,13 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crimes',
+    'rest_framework',
 )
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',),
+    'PAGINATE_BY': 10
+}
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -63,7 +69,7 @@ DATABASES = {
         'NAME': 'valet2',
         'USER': 'root',
         'PASSWORD': 'valet2',
-        'HOST': '14.63.175.76',
+        'HOST': '127.0.0.1',
         'PORT': '3306',
     }
 }

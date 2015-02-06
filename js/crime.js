@@ -48,15 +48,23 @@ $(function() {
   });
   $('#date-range span').html(moment().startOf('month').format('MM/DD/YYYY') + ' - ' +  moment().endOf('month').format('MM/DD/YYYY'));
 
- 
+ /*
+ f30200
+ff7700
+ffb200
+fff500
+34ff00
+47ff7e
+74fff3
+ */
   var data = [
-    {label: "23:00-24:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-    {label: "22:00-23:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-    {label: "21:00-22:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-    {label: "20:00-21:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-    {label: "19:00-20:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-    {label: "18:00-19:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-    {label: "17:00-18:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
+    {label: "23:00-24:00", value: 15, color:"#f30200", highlight: "#FF5A5E"},
+    {label: "22:00-23:00", value: 15, color:"#ff7700", highlight: "#FF5A5E"},
+    {label: "21:00-22:00", value: 15, color:"#ffb200", highlight: "#FF5A5E"},
+    {label: "20:00-21:00", value: 15, color:"#fff500", highlight: "#FF5A5E"},
+    {label: "19:00-20:00", value: 15, color:"#34ff00", highlight: "#FF5A5E"},
+    {label: "18:00-19:00", value: 15, color:"#47ff7e", highlight: "#FF5A5E"},
+    {label: "17:00-18:00", value: 15, color:"#74fff3", highlight: "#FF5A5E"},
     {label: "16:00-17:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
     {label: "15:00-16:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
     {label: "14:00-15:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
@@ -90,8 +98,20 @@ $(function() {
 
    // $(window).resize(resizeClock);
 
-    function resizeClock() {
+
+   var calendar_body = $('#table-calendar-body');
+   calendar_body.empty();
+   // 행
+  for(y = 0; y < 4; y++) { 
+    calendar_body.append("<tr></tr>");
+    for(x = 0; x < 7; x++){
+      $("#table-calendar-body tr:last").append("<td></td>");
+      $("#table-calendar-body tr:last td:last").append("sd");
     }
+  }
+   // 열 추가
+   // 값 추가 
+
 
     //resizeClock(); 
 

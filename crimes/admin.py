@@ -1,4 +1,4 @@
 from django.contrib import admin
-from .models import Crimes
+#from .models import Crimes
 
-admin.site.register(Crimes)
+#admin.site.register(Crimes)

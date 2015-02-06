@@ -12,6 +12,7 @@ class CrimeSerializer(serializers.Serializer):
     address = serializers.CharField()
     date = serializers.DateTimeField()
     description = serializers.CharField()
+    id = serializers.IntegerField()
 
     def create(self, validated_data):
         return Crimes.objects.create(**validated-data)

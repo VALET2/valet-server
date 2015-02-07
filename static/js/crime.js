@@ -48,12 +48,12 @@ $(function() {
     });
     var pointArray = new google.maps.MVCArray(markers);
 
-    if (heatmap)
+    if (heatmap === undefined)
+      heatmap = new google.maps.visualization.HeatmapLayer({
+        data : pointArray
+      });
+    else
       heatmap.setMap(null);
-
-    heatmap = new google.maps.visualization.HeatmapLayer({
-      data : pointArray
-    });
 
     heatmap.set('radius', heatmap.get('radius') ? null : 50);
     heatmap.set('opacity', heatmap.get('opacity') ? null : 0.5);

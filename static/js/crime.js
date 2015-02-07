@@ -26,7 +26,14 @@ $(function() {
   $('#date-range span').html(moment().startOf('month').format('MM/DD/YYYY') + ' - ' +  moment().endOf('month').format('MM/DD/YYYY'));
   var crimes = new crimeCollection();
   crimes.fetch({
-    success: function () {onDataChange(crimes)  }});//{ startdate : moment().startOf('month').format('YYYY-MM-DD'), enddate : moment().endOf('month').format('YYYY-MM-DD') } );
+    success : function () {
+      onDataChange(crimes);
+    },
+    data : { 
+      startdate : moment().startOf('month').format('YYYY-MM-DD'), 
+      enddate : moment().endOf('month').format('YYYY-MM-DD')
+    }
+  });
   
   map = new google.maps.Map(document.getElementById('map-canvas'), {
     zoom: 13,
@@ -43,7 +50,7 @@ $(function() {
     var heatmap = new google.maps.visualization.HeatmapLayer({
       data : pointArray
     });
-    heatmap.set('radius', heatmap.get('radius') ? null : 30);
+    heatmap.set('radius', heatmap.get('radius') ? null : 50);
     heatmap.set('opacity', heatmap.get('opacity') ? null : 0.5);
     heatmap.setMap(map);
 
@@ -62,8 +69,9 @@ $(function() {
   onDateChange = function(start, end) {
     $('#date-range span').html(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
     var crimes = new crimeCollection();
-    crimes.fetch({ startdate : start.format('YYYY-MM-DD'), enddate : end.format('YYYY-MM-DD') } );
-    onDataChange(crimes);
+    crimes.fetch({ success : function (){
+      onDataChange(crimes);
+    }, data : { startdate : start.format('YYYY-MM-DD'), enddate : end.format('YYYY-MM-DD') } } );
   };
 
 

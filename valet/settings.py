@@ -73,7 +73,7 @@ DATABASES = {
         'NAME': 'valet2',
         'USER': 'root',
         'PASSWORD': 'valet2',
-        'HOST': '127.0.0.1',
+        'HOST': '14.63.175.76',
         'PORT': '3306',
     }
 }

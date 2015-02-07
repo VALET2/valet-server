@@ -22,13 +22,49 @@ $(function() {
     }
   });
 
+
+  $('#date-range span').html(moment().startOf('month').format('MM/DD/YYYY') + ' - ' +  moment().endOf('month').format('MM/DD/YYYY'));
   var crimes = new crimeCollection();
-  crimes.fetch();
+  crimes.fetch({ startdate : moment().startOf('month').format('YYYY-MM-DD'), enddate : moment().endOf('month').format('YYYY-MM-DD') } );
+  
+  map = new google.maps.Map(document.getElementById('map-canvas'), {
+    zoom: 13,
+    center: new google.maps.LatLng(40.418641, -86.892279)
+  };);
 
-//crimes.rangeToDate("2014-01-01 00:00:00", "2015-02-28 00:00:00");
-//crimes.rangeToPosition(0, -180, 90, 180)
-// crimes.where({""})
+  onDataChange = function(crimes) {
+    var markers = [];
+    crimes.each(function(crime) {
+      var position = [new google.maps.LatLng(crime.latitude, crime.longitude)];
+      markers.concat(position);
+    });
 
+    var pointArray = new google.maps.MVCArray(markers);
+    var heatmap = new google.maps.visualization.HeatmapLayer({
+      data : pointArray
+    });
+    heatmap.set('radius', heatmap.get('radius') ? null : 15);
+    heatmap.set('opacity', heatmap.get('opacity') ? null : 0.5);
+    heatmap.setMap(map);
+
+    var calendar_body = $('#table-calendar-body');
+    calendar_body.empty();
+    // 행
+    for(y = 0; y < 4; y++) { 
+      calendar_body.append("<tr></tr>");
+      for(x = 0; x < 7; x++){
+        $("#table-calendar-body tr:last").append("<td></td>");
+        $("#table-calendar-body tr:last td:last").append("sd");
+      }
+    }
+  };
+
+  onDateChange = function(start, end) {
+    $('#date-range span').html(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
+    var crimes = new crimeCollection();
+    crimes.fetch({ startdate : start.format('YYYY-MM-DD'), enddate : end.format('YYYY-MM-DD') } );
+    onDataChange(crimes);
+  };
 
 
   $('#date-range').daterangepicker({
@@ -42,11 +78,12 @@ $(function() {
     },
     startDate: moment().startOf('month'),
     endDate: moment().endOf('month')
-  },
-  function(start, end) {
-    $('#date-range span').html(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
-  });
-  $('#date-range span').html(moment().startOf('month').format('MM/DD/YYYY') + ' - ' +  moment().endOf('month').format('MM/DD/YYYY'));
+  }, onDateChange
+  );
+
+
+  onDataChange(crimes);
+
 
  /*
  f30200
@@ -65,6 +102,7 @@ fff500
     {label: "19:00-20:00", value: 15, color:"#34ff00", highlight: "#FF5A5E"},
     {label: "18:00-19:00", value: 15, color:"#47ff7e", highlight: "#FF5A5E"},
     {label: "17:00-18:00", value: 15, color:"#74fff3", highlight: "#FF5A5E"},
+
     {label: "16:00-17:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
     {label: "15:00-16:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
     {label: "14:00-15:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
@@ -85,33 +123,17 @@ fff500
     ];
 
 
-    var options = {
-      animation : false,
-      tooltipTemplate: "<%= label %>"
-    };
-
     var c = $('#clock-chart');
     var ctx = $("#clock-chart").get(0).getContext("2d");
-           c.attr('width', $("#clock").width());
-        c.attr('height', $("#clock").height());
-        myNewChart = new Chart(ctx).Doughnut(data, options);
+    c.attr('width', $("#clock").width());
+    c.attr('height', $("#clock").height());
+
+    ClockChart = new Chart(ctx).Doughnut(data, {
+      animation : false,
+      tooltipTemplate: "<%= label %>"
+    });
 
    // $(window).resize(resizeClock);
-
-
-   var calendar_body = $('#table-calendar-body');
-   calendar_body.empty();
-   // 행
-  for(y = 0; y < 4; y++) { 
-    calendar_body.append("<tr></tr>");
-    for(x = 0; x < 7; x++){
-      $("#table-calendar-body tr:last").append("<td></td>");
-      $("#table-calendar-body tr:last td:last").append("sd");
-    }
-  }
-   // 열 추가
-   // 값 추가 
-
 
     //resizeClock(); 
 

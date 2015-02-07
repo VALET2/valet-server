@@ -1,10 +1,10 @@
 $(function() {
-  var crimeModel = Backbone.Model.extend({
+  crimeModel = Backbone.Model.extend({
    "url" : "",
    "idAttribute" : "id"
   });
 
-  var crimeCollection = Backbone.Collection.extend({
+ crimeCollection = Backbone.Collection.extend({
    "url" : "/crimes",
    "model" : crimeModel,
    "initialize" : function() {},
@@ -25,25 +25,25 @@ $(function() {
 
   $('#date-range span').html(moment().startOf('month').format('MM/DD/YYYY') + ' - ' +  moment().endOf('month').format('MM/DD/YYYY'));
   var crimes = new crimeCollection();
-  crimes.fetch({ startdate : moment().startOf('month').format('YYYY-MM-DD'), enddate : moment().endOf('month').format('YYYY-MM-DD') } );
+  crimes.fetch({
+    success: function () {onDataChange(crimes)  }});//{ startdate : moment().startOf('month').format('YYYY-MM-DD'), enddate : moment().endOf('month').format('YYYY-MM-DD') } );
   
   map = new google.maps.Map(document.getElementById('map-canvas'), {
     zoom: 13,
     center: new google.maps.LatLng(40.418641, -86.892279)
-  };);
+  });
 
   onDataChange = function(crimes) {
     var markers = [];
-    crimes.each(function(crime) {
-      var position = [new google.maps.LatLng(crime.latitude, crime.longitude)];
-      markers.concat(position);
+    crimes.each(function(item) {
+      var position = new google.maps.LatLng(item.get("latitude"), item.get("longitude"));
+      markers.push(position);
     });
-
     var pointArray = new google.maps.MVCArray(markers);
     var heatmap = new google.maps.visualization.HeatmapLayer({
       data : pointArray
     });
-    heatmap.set('radius', heatmap.get('radius') ? null : 15);
+    heatmap.set('radius', heatmap.get('radius') ? null : 30);
     heatmap.set('opacity', heatmap.get('opacity') ? null : 0.5);
     heatmap.setMap(map);
 
@@ -82,7 +82,6 @@ $(function() {
   );
 
 
-  onDataChange(crimes);
 
 
  /*

@@ -34,7 +34,7 @@ $(function() {
       enddate : moment().endOf('month').format('YYYY-MM-DD')
     }
   });
-  
+
   map = new google.maps.Map(document.getElementById('map-canvas'), {
     zoom: 13,
     center: new google.maps.LatLng(40.418641, -86.892279)
@@ -47,23 +47,19 @@ $(function() {
       markers.push(position);
     });
     var pointArray = new google.maps.MVCArray(markers);
-    var heatmap = new google.maps.visualization.HeatmapLayer({
+
+    if (heatmap)
+      heatmap.setMap(null);
+
+    heatmap = new google.maps.visualization.HeatmapLayer({
       data : pointArray
     });
+
     heatmap.set('radius', heatmap.get('radius') ? null : 50);
     heatmap.set('opacity', heatmap.get('opacity') ? null : 0.5);
-    heatmap.setMap(map);
+    heatmap.setMap(heatmap.getMap() ? null : map);
 
-    var calendar_body = $('#table-calendar-body');
-    calendar_body.empty();
-    // 행
-    for(y = 0; y < 4; y++) { 
-      calendar_body.append("<tr></tr>");
-      for(x = 0; x < 7; x++){
-        $("#table-calendar-body tr:last").append("<td></td>");
-        $("#table-calendar-body tr:last td:last").append("sd");
-      }
-    }
+
   };
 
   onDateChange = function(start, end) {
@@ -72,6 +68,25 @@ $(function() {
     crimes.fetch({ success : function (){
       onDataChange(crimes);
     }, data : { startdate : start.format('YYYY-MM-DD'), enddate : end.format('YYYY-MM-DD') } } );
+
+    var calendar_body = $('#table-calendar-body');
+    calendar_body.empty();
+    // 행
+    var duration = moment.duration(end.diff(start))
+    var dayCount = 0;
+
+    for(y = 0; y < duration / 7; y++) {
+      calendar_body.append("<tr></tr>");
+      for(x = 0; x < 7; x++){
+          dayCount = dayCount + 1;
+          $("#table-calendar-body tr:last").append("<td></td>");
+
+        if (y == 0 && x >= start.isoweek()) {
+          $("#table-calendar-body tr:last td:last").append(dayCount);
+        }
+      }
+    }
+
   };
 
 

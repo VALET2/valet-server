@@ -43,53 +43,103 @@ $(function() {
   onDataChange = function(crimes) {
     var markers = [];
 
-    var crimeIconDict = {
-      "Assault " : 'icon/Assult.png',
-      "Assault" : 'icon/Assult.png',
-      "Assault with Deadly Weapon" : 'icon/Assault-with-Deadly-Weapon.png',
-      "Breaking & Entering" : 'icon/Breaking-&-Entering.png',
-      "Emergency" : 'icon/Emergency.png',
-      "Fire" : 'icon/Fire.png',
-      "Homicide" : 'icon/Homicide.png',
-      "Other " : 'icon/Other.png',
-      "Alarm" : 'icon/Alarm.png',
-      "Arson" : 'icon/Arson.png',
-      "Death" : 'icon/Death.png',
-      "Family Offense" : 'icon/Family-Offense.png',
-      "Kidnapping" : 'icon/Kidnapping.png',
-      "Missing Person" : 'icon/Missing-Person.png',
-      "Other" : 'icon/Other.png',
-      "Weapons Offense" : 'icon/Weapons-Offense.png',
-      "Proactive Policing" : 'icon/Proactive-Policing.png',
-      "Community Policing" : 'icon/Community-Policing.png',
-      "Pedestrian Stop" : 'icon/Other.png',
-      "Vehicle Stop" : 'icon/Other.png',
-      "Property Crime " : 'icon/Other.png',
-      "Property Crime" : 'icon/Other.png',
-      "Property Crime Commercial" : 'icon/Other.png',
-      "Property Crime Residential" : 'icon/Other.png',
-      "Quality of Life" : 'icon/Other.png',
-      "Disorder" : 'icon/Other.png',
-      "Drugs" : 'icon/Drugs.png',
-      "Liquor" : 'icon/Liquor.png',
-      "Robbery" : 'icon/Other.png',
-      "Sexual Offense" :'icon/Sexual-Offense.png',
-      "Other Sexual Offense" :'icon/Sexual-Offense.png',
-      "Sexual Assault" :'icon/Sexual-Offense.png',
-      "Theft" :'icon/Breaking-&-Entering.png',
-      "Theft from Vehicle" :'icon/Breaking-&-Entering.png',
-      "Theft of Vehicle" :'icon/Traffic.png',
-      "Traffic" :'icon/Traffic.png',
-      "Vehicle Recovery" : 'icon/Traffic.png',
+    var iconBase = '/static/icon/';
+    var crimeDict = {
+      9 : 'Assault' ,
+      149 : 'Assault' ,
+      150 : "Assault with Deadly Weapon" ,
+      100 : "Breaking & Entering" ,
+      16 : "Emergency" ,
+      15 : "Fire" ,
+      104 : "Homicide" ,
+      11 : "Other " ,
+      160 : "Alarm" ,
+      121 :"Arson" ,
+
+      162 : "Death" ,
+      164 : "Family Offense" ,
+      165 : "Kidnapping",
+      167 : "Missing Person",
+      151 : "Other",
+
+      171 : "Weapons Offense",
+      14 : "Proactive Policing",
+      161 : "Community Policing",
+      173 : "Pedestrian Stop",
+      172 : "Vehicle Stop",
+
+      10 : "Property Crime ",
+      180 : "Property Crime",
+      179 : "Property Crime Commercial",
+      178 : "Property Crime Residential",
+      12 : "Quality of Life",
+
+      163 : "Disorder",
+      168 : "Drugs",
+      166 : "Liquor",
+      98 : "Robbery",
+      8 : "Sexual Offense",
+
+      97 : "Other Sexual Offense",
+      148 : "Sexual Assault",
+      103 : "Theft",
+      101 : "Theft from Vehicle",
+      99 : "Theft of Vehicle",
+
+      169 : "Traffic",
+      170 : "Vehicle Recovery",
     };
-    console.log(crimeIconDict);
+
+    var crimeIconDict = {
+      "Assault " : iconBase + 'Assult.png',
+      "Assault" : iconBase + 'Assult.png',
+      "Assault with Deadly Weapon" : iconBase + 'Assault-with-Deadly-Weapon.png',
+      "Breaking & Entering" : iconBase + 'Breaking-&-Entering.png',
+      "Emergency" : iconBase + 'Emergency.png',
+      "Fire" : iconBase + 'Fire.png',
+      "Homicide" : iconBase + 'Homicide.png',
+      "Other " : iconBase + 'Other.png',
+      "Alarm" : iconBase + 'Alarm.png',
+      "Arson" : iconBase + 'Arson.png',
+      "Death" : iconBase + 'Death.png',
+      "Family Offense" : iconBase + 'Family-Offense.png',
+      "Kidnapping" : iconBase + 'Kidnapping.png',
+      "Missing Person" : iconBase + 'Missing-Person.png',
+      "Other" : iconBase + 'Other.png',
+      "Weapons Offense" : iconBase + 'Weapons-Offense.png',
+      "Proactive Policing" : iconBase + 'Proactive-Policing.png',
+      "Community Policing" : iconBase + 'Community-Policing.png',
+      "Pedestrian Stop" : iconBase + 'Other.png',
+      "Vehicle Stop" : iconBase + 'Other.png',
+      "Property Crime " : iconBase + 'Other.png',
+      "Property Crime" : iconBase + 'Other.png',
+      "Property Crime Commercial" : iconBase + 'Other.png',
+      "Property Crime Residential" : iconBase + 'Other.png',
+      "Quality of Life" : iconBase + 'Other.png',
+      "Disorder" : iconBase + 'Other.png',
+      "Drugs" : iconBase + 'Drugs.png',
+      "Liquor" : iconBase + 'Liquor.png',
+      "Robbery" : iconBase + 'Other.png',
+      "Sexual Offense" : iconBase + 'Sexual-Offense.png',
+      "Other Sexual Offense" : iconBase + 'Sexual-Offense.png',
+      "Sexual Assault" : iconBase + 'Sexual-Offense.png',
+      "Theft" : iconBase + 'Breaking-&-Entering.png',
+      "Theft from Vehicle" : iconBase + 'Breaking-&-Entering.png',
+      "Theft of Vehicle" : iconBase + 'Traffic.png',
+      "Traffic" : iconBase + 'Traffic.png',
+      "Vehicle Recovery" : iconBase + 'Traffic.png',
+    };
 
     crimes.each(function(item) {
       
       var position = new google.maps.LatLng(item.get("latitude"), item.get("longitude"));
       markers.push(position);
 
-      console.log(item.crimetype);
+      new google.maps.Marker({
+        position : position ,
+        map : map ,
+        icon : crimeIconDict[ crimeDict [ item.get('crimetype') ] ],
+      });
 
     });
     var pointArray = new google.maps.MVCArray(markers);

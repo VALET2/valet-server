@@ -113,17 +113,28 @@ $(function() {
     center: new google.maps.LatLng(40.418641, -86.892279)
   });
 
+  crimeTypeMarkers = [];
+
   onDataChange = function(crimes, start, end) {
     var markers = [];
+
+    if (crimeTypeMarkers.length != 0) {
+      for (var i = 0 ; i <crimeTypeMarkers.length; i++) {
+        crimeTypeMarkers[i].setMap(null);
+      }
+    }
+
     crimes.each(function(item) {
       var position = new google.maps.LatLng(item.get("latitude"), item.get("longitude"));
       markers.push(position);
 
-      new google.maps.Marker({
+      crimeTypeMarker = new google.maps.Marker({
         position : position,
         map : map,
         icon : crimeIconDict[ crimeDict [ item.get('crimetype') ] ],
       });
+
+      crimeTypeMarkers.push(crimeTypeMarker);
 
     });
     var pointArray = new google.maps.MVCArray(markers);

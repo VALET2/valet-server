@@ -42,9 +42,55 @@ $(function() {
 
   onDataChange = function(crimes) {
     var markers = [];
+
+    var crimeIconDict = {
+      "Assault " : 'icon/Assult.png',
+      "Assault" : 'icon/Assult.png',
+      "Assault with Deadly Weapon" : 'icon/Assault-with-Deadly-Weapon.png',
+      "Breaking & Entering" : 'icon/Breaking-&-Entering.png',
+      "Emergency" : 'icon/Emergency.png',
+      "Fire" : 'icon/Fire.png',
+      "Homicide" : 'icon/Homicide.png',
+      "Other " : 'icon/Other.png',
+      "Alarm" : 'icon/Alarm.png',
+      "Arson" : 'icon/Arson.png',
+      "Death" : 'icon/Death.png',
+      "Family Offense" : 'icon/Family-Offense.png',
+      "Kidnapping" : 'icon/Kidnapping.png',
+      "Missing Person" : 'icon/Missing-Person.png',
+      "Other" : 'icon/Other.png',
+      "Weapons Offense" : 'icon/Weapons-Offense.png',
+      "Proactive Policing" : 'icon/Proactive-Policing.png',
+      "Community Policing" : 'icon/Community-Policing.png',
+      "Pedestrian Stop" : 'icon/Other.png',
+      "Vehicle Stop" : 'icon/Other.png',
+      "Property Crime " : 'icon/Other.png',
+      "Property Crime" : 'icon/Other.png',
+      "Property Crime Commercial" : 'icon/Other.png',
+      "Property Crime Residential" : 'icon/Other.png',
+      "Quality of Life" : 'icon/Other.png',
+      "Disorder" : 'icon/Other.png',
+      "Drugs" : 'icon/Drugs.png',
+      "Liquor" : 'icon/Liquor.png',
+      "Robbery" : 'icon/Other.png',
+      "Sexual Offense" :'icon/Sexual-Offense.png',
+      "Other Sexual Offense" :'icon/Sexual-Offense.png',
+      "Sexual Assault" :'icon/Sexual-Offense.png',
+      "Theft" :'icon/Breaking-&-Entering.png',
+      "Theft from Vehicle" :'icon/Breaking-&-Entering.png',
+      "Theft of Vehicle" :'icon/Traffic.png',
+      "Traffic" :'icon/Traffic.png',
+      "Vehicle Recovery" : 'icon/Traffic.png',
+    };
+    console.log(crimeIconDict);
+
     crimes.each(function(item) {
+      
       var position = new google.maps.LatLng(item.get("latitude"), item.get("longitude"));
       markers.push(position);
+
+      console.log(item.crimetype);
+
     });
     var pointArray = new google.maps.MVCArray(markers);
     var heatmap = new google.maps.visualization.HeatmapLayer({
@@ -64,6 +110,16 @@ $(function() {
         $("#table-calendar-body tr:last td:last").append("sd");
       }
     }
+
+    //vadd custom markers by crimetype
+    // markers.each( function(marker) {
+    //   new google.maps.Marker({
+    //     position : marker ,
+    //     map : map ,
+    //     icon
+    //   });
+    // });
+
   };
 
   onDateChange = function(start, end) {

@@ -1,50 +1,5 @@
-$(function() {
-  crimeModel = Backbone.Model.extend({
-   "url" : "",
-   "idAttribute" : "id"
-  });
-
- crimeCollection = Backbone.Collection.extend({
-   "url" : "/crimes",
-   "model" : crimeModel,
-   "initialize" : function() {},
-   "rangeToDate" : function(date1, date2) {
-      filtered = this.filter(function(crime) {
-        return date1 < crime.get("date") && crime.get("date") < date2
-      });
-      return new crimeCollection(filtered);
-    },
-    "rangeToPosition" : function(lat, lng, lat2, lng2) {
-      filtered = this.filter(function(crime) {
-        return true;
-      });
-      return new crimeCollection(filtered);
-    }
-  });
-
-
-  $('#date-range span').html(moment().startOf('month').format('MM/DD/YYYY') + ' - ' +  moment().endOf('month').format('MM/DD/YYYY'));
-  var crimes = new crimeCollection();
-  crimes.fetch({
-    success : function () {
-      onDataChange(crimes);
-    },
-    data : { 
-      startdate : moment().startOf('month').format('YYYY-MM-DD'), 
-      enddate : moment().endOf('month').format('YYYY-MM-DD')
-    }
-  });
-
-  map = new google.maps.Map(document.getElementById('map-canvas'), {
-    zoom: 13,
-    center: new google.maps.LatLng(40.418641, -86.892279)
-  });
-
-  onDataChange = function(crimes) {
-    var markers = [];
-
-    var iconBase = '/static/icon/';
-    var crimeDict = {
+iconBase = '/static/icon/';
+    crimeDict = {
       9 : 'Assault' ,
       149 : 'Assault' ,
       150 : "Assault with Deadly Weapon" ,
@@ -90,7 +45,7 @@ $(function() {
       170 : "Vehicle Recovery",
     };
 
-    var crimeIconDict = {
+   crimeIconDict = {
       "Assault " : iconBase + 'Assult.png',
       "Assault" : iconBase + 'Assult.png',
       "Assault with Deadly Weapon" : iconBase + 'Assault-with-Deadly-Weapon.png',
@@ -129,28 +84,57 @@ $(function() {
       "Traffic" : iconBase + 'Traffic.png',
       "Vehicle Recovery" : iconBase + 'Traffic.png',
     };
+$(function() {
+  crimeModel = Backbone.Model.extend({
+   "url" : "",
+   "idAttribute" : "id"
+  });
 
+ crimeCollection = Backbone.Collection.extend({
+   "url" : "/crimes",
+   "model" : crimeModel,
+   "byDate" : function(value) {
+      var filtered = this.filter(function(crime) {
+        return value.format("YYYY-MM-DD") == crime.get("date").split("T")[0];
+      });
+      return new crimeCollection(filtered);
+    },
+
+    "rangeToPosition" : function(lat, lng, lat2, lng2) {
+      filtered = this.filter(function(crime) {
+        return true;
+      });
+      return new crimeCollection(filtered);
+    }
+  });
+
+  map = new google.maps.Map(document.getElementById('map-canvas'), {
+    zoom: 13,
+    center: new google.maps.LatLng(40.418641, -86.892279)
+  });
+
+  onDataChange = function(crimes, start, end) {
+    var markers = [];
     crimes.each(function(item) {
-      
       var position = new google.maps.LatLng(item.get("latitude"), item.get("longitude"));
       markers.push(position);
 
       new google.maps.Marker({
-        position : position ,
-        map : map ,
+        position : position,
+        map : map,
         icon : crimeIconDict[ crimeDict [ item.get('crimetype') ] ],
       });
 
     });
     var pointArray = new google.maps.MVCArray(markers);
 
-    if (heatmap === undefined)
-      heatmap = new google.maps.visualization.HeatmapLayer({
-        data : pointArray
-      });
-    else
+    if (typeof heatmap != "undefined")
       heatmap.setMap(null);
 
+    heatmap = new google.maps.visualization.HeatmapLayer({
+      data : pointArray
+    });
+    
     heatmap.set('radius', heatmap.get('radius') ? null : 50);
     heatmap.set('opacity', heatmap.get('opacity') ? null : 0.5);
     heatmap.setMap(heatmap.getMap() ? null : map);
@@ -158,54 +142,43 @@ $(function() {
     var calendar_body = $('#table-calendar-body');
     calendar_body.empty();
     // 행
-    for(y = 0; y < 4; y++) { 
+    var duration = moment.duration(end - start).asDays();
+    var dayCount = 0;
+    var day = start;
+    for(y = 0; y < (duration + start.weekday()) / 7; y++) {
       calendar_body.append("<tr></tr>");
-      for(x = 0; x < 7; x++){
-        $("#table-calendar-body tr:last").append("<td></td>");
-        $("#table-calendar-body tr:last td:last").append("sd");
+      for(x = 0; x < 7; x++) {
+        $("#table-calendar-body tr:last").append("<td>.</td>");
+        if (dayCount < duration) {
+          if (y == 0 && x >= start.weekday()) {
+            dayCount = dayCount + 1;
+            var dayCrimes = crimes.byDate(day);
+            $("#table-calendar-body tr:last td:last").empty().append(dayCrimes.models.length);
+            day = day.add(1, 'day');
+          } else if (y != 0) {
+            dayCount = dayCount + 1;
+            var dayCrimes = crimes.byDate(day);
+            $("#table-calendar-body tr:last td:last").empty().append(dayCrimes.models.length);
+            day = day.add(1, 'day');
+          }
+        }
       }
     }
-
-    //vadd custom markers by crimetype
-    // markers.each( function(marker) {
-    //   new google.maps.Marker({
-    //     position : marker ,
-    //     map : map ,
-    //     icon
-    //   });
-    // });
-
   };
 
   onDateChange = function(start, end) {
     $('#date-range span').html(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
     var crimes = new crimeCollection();
-    crimes.fetch({ success : function (){
-      onDataChange(crimes);
-    }, data : { startdate : start.format('YYYY-MM-DD'), enddate : end.format('YYYY-MM-DD') } } );
-
-    var calendar_body = $('#table-calendar-body');
-    calendar_body.empty();
-    // 행
-    var duration = moment.duration(end.diff(start))
-    var dayCount = 0;
-
-    for(y = 0; y < duration / 7; y++) {
-      calendar_body.append("<tr></tr>");
-      for(x = 0; x < 7; x++){
-          dayCount = dayCount + 1;
-          $("#table-calendar-body tr:last").append("<td></td>");
-
-        if (y == 0 && x >= start.isoweek()) {
-          $("#table-calendar-body tr:last td:last").append(dayCount);
-        }
-      }
-    }
-
+    crimes.fetch({ success : function () {
+      onDataChange(crimes, start, end);
+    }, data : { "startdate" : start.format('YYYY-MM-DD'), "enddate" : end.format('YYYY-MM-DD') }, 
+    processData: true } );
   };
 
+  $('#date-range span').html(moment().startOf('month').format('MM/DD/YYYY') + ' - ' +  moment().endOf('month').format('MM/DD/YYYY'));
+  onDateChange(moment().startOf('month'), moment().endOf('month'));
 
-  $('#date-range').daterangepicker({
+  $('#date-range').daterangepicker( {
     ranges: {
      'Today': [moment(), moment()],
      'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
@@ -215,9 +188,8 @@ $(function() {
      'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
     },
     startDate: moment().startOf('month'),
-    endDate: moment().endOf('month')
-  }, onDateChange
-  );
+    endDate: moment().endOf('month') 
+  }, onDateChange);
 
 
 

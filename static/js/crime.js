@@ -117,6 +117,7 @@ $(function() {
   });
 
   crimeTypeMarkers = [];
+  latestPosition = null;
 
   onDataChange = function(crimes, start, end) {
     var markers = [];
@@ -146,20 +147,20 @@ $(function() {
       '</div>'
       });
 
-    
-
-
-
-
-
       var crimeTypeMarker = new google.maps.Marker({
         position : position,
         map : map,
         icon : crimeIconDict[ crimeDict [ item.get('crimetype') ] ],
       });
 
-      google.maps.event.addListener(crimeTypeMarker, 'click', function() {
+      google.maps.event.addListener(crimeTypeMarker, 'click', function(e) {
+
         infowindow.open(map, crimeTypeMarker);
+        if (e.latLng == latestPosition) {
+          infowindow.close();
+          latestPosition = null;
+        }
+        else latestPosition = e.latLng;
       });
 
       crimeTypeMarkers.push(crimeTypeMarker);

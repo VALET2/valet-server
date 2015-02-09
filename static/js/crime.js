@@ -110,6 +110,8 @@ $(function() {
 
   map = new google.maps.Map(document.getElementById('map-canvas'), {
     zoom: 13,
+    scrollwheel: false,
+    disableDoubleClickZoom: true,
     center: new google.maps.LatLng(40.418641, -86.892279)
   });
 

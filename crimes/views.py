@@ -34,7 +34,7 @@ def crime_collection(request):
             query_dict.pop('enddate')
 
         crimes = Crimes.objects.filter(**query_dict)
-        crimes = crimes.filter(date__range=(start_date,end_date))
+        crimes = crimes.filter(date__gte=start_date, date__lt=end_date)
 
         serializer = CrimeSerializer(crimes, many=True)
         return Response(serializer.data)

@@ -95,6 +95,7 @@ $(function() {
    "model" : crimeModel,
    "byDate" : function(value) {
       var filtered = this.filter(function(crime) {
+        var start = value.startOf("day");
         return value.format("YYYY-MM-DD") == crime.get("date").split("T")[0];
       });
       return new crimeCollection(filtered);
@@ -128,10 +129,35 @@ $(function() {
       var position = new google.maps.LatLng(item.get("latitude"), item.get("longitude"));
       markers.push(position);
 
-      crimeTypeMarker = new google.maps.Marker({
+      var infowindow = new google.maps.InfoWindow({
+          content: '<div id="content">'+
+      '<div id="siteNotice">'+
+      '</div>'+
+      '<h2 id="firstHeading" class="firstHeading">' + crimeDict [ item.get('crimetype') ] + '</h2>'+
+      '<div id="bodyContent">'+
+      '<p>Police Department : '+item.get("police_name")+
+      '<br>Address : '+item.get("address")+
+      '<br>Latitude : '+item.get("latitude")+
+      '<br>Longitude : '+item.get("longitude")+
+      '</p>'+
+      '</div>'+
+      '</div>'
+      });
+
+    
+
+
+
+
+
+      var crimeTypeMarker = new google.maps.Marker({
         position : position,
         map : map,
         icon : crimeIconDict[ crimeDict [ item.get('crimetype') ] ],
+      });
+
+      google.maps.event.addListener(crimeTypeMarker, 'click', function() {
+        infowindow.open(map, crimeTypeMarker);
       });
 
       crimeTypeMarkers.push(crimeTypeMarker);
@@ -164,13 +190,17 @@ $(function() {
           if (y == 0 && x >= start.weekday()) {
             dayCount = dayCount + 1;
             var dayCrimes = crimes.byDate(day);
-            $("#table-calendar-body tr:last td:last").empty().append(dayCrimes.models.length);
-            day = day.add(1, 'day');
+            var color = getDangerColor(dayCrimes.models.length, crimes.models.length, duration);
+
+            $("#table-calendar-body tr:last td:last").empty().append(dayCrimes.models.length).css("background", color);
+            day.add(1, 'day');
           } else if (y != 0) {
             dayCount = dayCount + 1;
             var dayCrimes = crimes.byDate(day);
-            $("#table-calendar-body tr:last td:last").empty().append(dayCrimes.models.length);
-            day = day.add(1, 'day');
+            var color = getDangerColor(dayCrimes.models.length, crimes.models.length, duration);
+
+            $("#table-calendar-body tr:last td:last").empty().append(dayCrimes.models.length).css("background", color);
+            day.add(1, 'day');
           }
         }
       }
@@ -202,7 +232,27 @@ $(function() {
     endDate: moment().endOf('month') 
   }, onDateChange);
 
+  getDangerColor = function(count, all, days) {
 
+    
+    
+    var percent = (count - (all / days)) / (all / days) * 100;
+    if (percent < -14)
+      return "#74fff3";
+    else if (percent < 0)
+      return "#47ff7e";
+    else if (percent < 14)
+      return "#34ff00"
+    else if (percent < 28)
+      return "#fff500"
+    else if (percent < 42)
+      return "#ffb200"
+    else if (percent < 56)
+      return "#ff7700"
+    else if (percent < 200)
+      return "#f30200"
+
+  }
 
 
  /*

@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'backbone',
     'crimes',
     'rest_framework',
+    'purduecrime',
 )
 
 STATICFILES_DIRS = (
@@ -75,7 +76,15 @@ DATABASES = {
         'PASSWORD': 'valet2',
         'HOST': '14.63.175.76',
         'PORT': '3306',
-    }
+    },
+    'purduecrime': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'VALET',
+        'USER': 'vitiguest',
+        'PASSWORD': 'vitiguest',
+        'HOST': 'pixel.ecn.purdue.edu',
+        'PORT': '4444',
+    },
 }
 
 # Internationalization

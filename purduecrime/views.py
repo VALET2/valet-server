@@ -27,7 +27,7 @@ def crime_collection(request):
         query_dict = query_params.dict()
         params_list = query_dict.keys()
 
-        start_date = datetime.strptime(query_params.get('startdate',default='2015-01-01'), '%Y-%m-%d')
+        start_date = datetime.strptime(query_params.get('startdate',default='2015-02-01'), '%Y-%m-%d')
         end_date = datetime.strptime(query_params.get('enddate',default='2100-01-01'),'%Y-%m-%d')
 
         if 'startdate' in params_list:
@@ -35,7 +35,8 @@ def crime_collection(request):
         if 'enddate' in params_list:
             query_dict.pop('enddate')
 
-        crimes = Crime.objects.using('purduecrime').filter(date_occu__gte=start_date, date_occu__lt=end_date)
+#        crimes = Crime.objects.using('purduecrime').filter(date_occu__gte=start_date, date_occu__lt=end_date)
+        crimes = Crime.objects.using('purduecrime').filter(date_occu__range=(start_date,end_date))
         crimes = crimes.filter(**query_dict)
 
         serializer = CrimeSerializer(crimes, many=True)

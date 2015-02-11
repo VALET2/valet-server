@@ -15,7 +15,7 @@ class CrimeSerializer(serializers.Serializer):
     id = serializers.IntegerField()
 
     def create(self, validated_data):
-        return Crimes.objects.create(**validated-data)
+        return Crimes.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         instance.latitude = validated_data.get('latitude', instance.latitude)

@@ -85,6 +85,17 @@ crimeIconDict = {
   "Traffic" : iconBase + 'Traffic.png',
   "Vehicle Recovery" : iconBase + 'Traffic.png',
 };
+
+
+
+/*
+날짜 범위를 선택한다. -> 타입, 경찰서를 모은다.
+날짜를 선택한다. -> 타입과 날짜를 고려한 결과를 뽑는다.
+날짜 + 시간을 선택한다 -> 모두를 고려한 결과를 뽑는다.
+범위 + 시간을 선택한다 -> 타입과 시간을 고려한 결과를 뽑는다.
+
+
+*/
 $(function() {
 
   crimeModel = Backbone.Model.extend({
@@ -97,11 +108,32 @@ $(function() {
    "model" : crimeModel,
    "byDate" : function(value) {
     var filtered = this.filter(function(crime) {
+      //console.log(crime);
+      //console.log(value)
       return value.format("YYYY-MM-DD") === crime.get("date_occu").split("T")[0];
     });
     return new crimeCollection(filtered);
   },
+  "rangeDate" : function(minDate, maxDate) {
+    var filtered = this.filter(function(crime) {
+      return moment().range(minDate, maxDate).contains( moment(crime.get("date_occu")) );
+    });
+    return new crimeCollection(filtered);
+  },
+  "rangeTime" : function(minTime, maxTime) {
+    var filtered = this.filter(function(crime) {
+      var crimeHour = moment(crime.get("date_occu")).hour();
+      return moment(minTime).hour() < crimeHour && crimeHour <= moment(maxTime).hour();
+    });
+    return new crimeCollection(filtered);
+  },
+  "byType" : function(type, value) {
+    var filtered = this.filter(function(crime) {
+      return crime.get(type) == value;
+    });
+    return new crimeCollection(filtered);
 
+  },
   "rangeToPosition" : function(lat, lng, lat2, lng2) {
     filtered = this.filter(function(crime) {
       return true;
@@ -110,124 +142,312 @@ $(function() {
   }
 });
 
-  map = new google.maps.Map(document.getElementById('map-canvas'), {
-    zoom: 13,
-    scrollwheel: false,
-    disableDoubleClickZoom: true,
-    center: new google.maps.LatLng(40.418641, -86.892279)
+map = new google.maps.Map(document.getElementById('map-canvas'), {
+  zoom: 13,
+  scrollwheel: false,
+  disableDoubleClickZoom: true,
+  center: new google.maps.LatLng(40.418641, -86.892279)
+});
+
+searchData = {
+  startDate : null,
+  endDate : null,
+  oldStartDate : moment(),
+  oldEndDate : moment(),
+
+  date : null,
+  startTime : null,  
+  endTime : null,
+  crimeType : "",
+  police : ""
+}
+
+crimesData = new crimeCollection();
+
+onDateRangeChange = function(start, end) {
+  searchData.startDate = moment(start);  
+  searchData.endDate = moment(end);
+  searchData.date = null;
+  searchData.startTime = null; 
+  searchData.endTime = null;
+  searchData.crimeType = "";
+  searchData.police = "";
+
+
+  $('#date-range span').html(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
+  getData(function(data) {
+    onDataChange(data)
+    updateCalendar(start, end);
+    updateClock();
   });
+}
 
-  crimeTypeMarkers = [];
-  latestPosition = null;
+var crimeTypeMarkers = [];
+var crimePoints = [];
+var latestPosition = null;
+var crimesType = [];
+var policesType = [];
 
-  onDataChange = function(crimes, start, end) {
-    var markers = [];
+getData = function(callback) {
+  var self = this;
+  if (searchData.startDate != null && searchData.endDate != null) {
 
-    if (crimeTypeMarkers.length != 0) {
-      for (var i = 0 ; i <crimeTypeMarkers.length; i++) {
-        crimeTypeMarkers[i].setMap(null);
-      }
+    var search = function() {
+      var crimes = crimesData;
+
+      if (searchData.date != null)
+        crimes = crimes.byDate(searchData.date)
+
+      if (searchData.startTime != null && searchData.endTime != null)
+        crimes = crimes.rangeTime(searchData.startTime, searchData.endTime);
+
+      if (searchData.crimeType != "")
+        crimes = crimes.byType("chrgdesc", searchData.crimeType);
+
+      if (searchData.police != "")
+        crimes = crimes.byType("agency", searchData.police);
+
+      return crimes;
     }
 
-    crimes.each(function(item) {
-      var position = new google.maps.LatLng(item.get("latitude"), item.get("longitude"));
-      markers.push(position);
+    if (searchData.oldStartDate.diff(searchData.startDate) || searchData.oldEndDate.diff(searchData.endDate)) {
+      crimesData.fetch( {
+        success : function() {       
+          searchData.oldStartDate = moment(searchData.startDate);
+          searchData.oldEndDate = moment(searchData.endDate);
+          crimesData.each(function(item) {
+            var hasCrimeType = false;
+            for(var i in crimesType) {
+              if (crimesType[i] == item.get("chrgdesc"))
+                hasCrimeType = true;
+            }
+            if (!hasCrimeType)
+              crimesType.push(item.get("chrgdesc"));
 
-      var infowindow = new google.maps.InfoWindow({
-        content : getInfoWindowDecs(item)
-      });
-
-      var crimeTypeMarker = new google.maps.Marker({
-        position : position,
-        map : map,
-        icon : crimeIconDict[ item.get('chrgdesc')  ],
-      });
-
-      google.maps.event.addListener(crimeTypeMarker, 'click', function(e) {
-
-        infowindow.open(map, crimeTypeMarker);
-        if (e.latLng == latestPosition) {
-          infowindow.close();
-          latestPosition = null;
-        }
-        else latestPosition = e.latLng;
-      });
-
-      crimeTypeMarkers.push(crimeTypeMarker);
-
-    });
-    var pointArray = new google.maps.MVCArray(markers);
-
-    if (typeof heatmap != "undefined")
-      heatmap.setMap(null);
-
-    heatmap = new google.maps.visualization.HeatmapLayer({
-      data : pointArray
-    });
-
-    heatmap.set('radius', heatmap.get('radius') ? null : 50);
-    heatmap.set('opacity', heatmap.get('opacity') ? null : 0.5);
-    heatmap.setMap(heatmap.getMap() ? null : map);
+            var hasPolice = false;
+            for(var i in policesType) {
+              if (policesType[i] == item.get("agency"))
+                hasPolice = true;
+            }
+            if (!hasPolice)
+              policesType.push(item.get("agency"));
+          });
+          makeDropdown();
 
 
+
+          callback(search());
+        }, 
+        data : { 
+          "startdate" : searchData.startDate.format('YYYY-MM-DD'), 
+          "enddate" : searchData.endDate.format('YYYY-MM-DD')
+        }, 
+        processData : true
+      } );
+    } else { 
+      return search(); 
+    }
+  }
 };
 
+onDataChange = function(crimes) {
+  if (crimeTypeMarkers.length != 0) {
+    for (var i = 0 ; i < crimeTypeMarkers.length; i++) {
+      crimeTypeMarkers[i].setMap(null);
+    }
+  }
 
-// 선택한 달력이 바뀌었을때 호출됨.
-onDateChange = function(start, end) {
-  $('#date-range span').html(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
-  var crimes = new crimeCollection();
-  crimes.fetch({ success : function () {
-    onDataChange(crimes, moment(start), moment(end));
-    updateCalendar(crimes, moment(start), moment(end));
-  }, data : { "startdate" : start.format('YYYY-MM-DD'), "enddate" : end.format('YYYY-MM-DD') }, 
-  processData: true } );
-};
+  crimePoints = [];
+  crimeTypeMarkers = [];
 
-updateCalendar = function(crimes, start, end) {
+
+
+  if (typeof heatmap != "undefined")
+    heatmap.setMap(null);
+
+  crimes.each( function(item) {
+    var position = new google.maps.LatLng(item.get("latitude"), item.get("longitude"));
+    crimePoints.push(position);
+
+    var crimeTypeMarker = new google.maps.Marker({
+      position : position,
+      map : map,
+      icon : crimeIconDict[ item.get('chrgdesc')  ],
+    });
+
+    var infowindow = new google.maps.InfoWindow({
+      content : getInfoWindowDecs(item)
+    });
+
+    crimeTypeMarkers.push(crimeTypeMarker);
+    google.maps.event.addListener(crimeTypeMarker, 'click', function (e) {
+      infowindow.open(map, crimeTypeMarker);
+      if (e.latLng == latestPosition) {
+        infowindow.close();
+        latestPosition = null;
+      }
+      else latestPosition = e.latLng;
+    });
+  });
+
+  heatmap = new google.maps.visualization.HeatmapLayer({
+    data : new google.maps.MVCArray(crimePoints)
+  });
+
+  heatmap.set('radius', heatmap.get('radius') ? null : 50);
+  heatmap.set('opacity', heatmap.get('opacity') ? null : 0.5);
+  heatmap.setMap(heatmap.getMap() ? null : map);
+}
+
+updateCalendar = function(start, end) {
  $('#table-calendar-body').empty();
  var duration = moment.duration(end.startOf("day") - start.startOf("day")).asDays() + 1;
  var dayCount = 0;
  var day = moment(start);
  var t = duration + start.weekday() + ((duration + start.weekday()) % 7 > 0 ? 7 - (duration + start.weekday()) % 7 : 0);
 
- for(var d = 0; d < t; d++) {
-   if (d % 7 == 0) {
-    $('#table-calendar-body').append("<tr></tr>");
-  }
-
-  $("#table-calendar-body tr:last").append("<td>.</td>");
-
-  if (d - start.weekday() < duration){
-    if (d > 6) {
-      var todayCrimes = crimes.byDate(day);
-      var color = getDangerColor(todayCrimes.length, crimes.models.length, duration);
-      $("#table-calendar-body tr:last td:last").empty().append(todayCrimes.models.length).css("background", color).click({ "todayCrimes" : todayCrimes, "date" : day.format("YYYY-MM-DD HH:mm:ss") }, function(e) {
-        onDataChange(e.data.todayCrimes, moment( e.data.date ), moment( e.data.date ).add(1, "days"));
-        $("*").removeClass('focus');
-        $(this).addClass('focus');
-      });
-      day.add(1, 'day');
-
-    } 
-    else if (d >= start.weekday())
-    {
-      var todayCrimes = crimes.byDate(day);
-      var color = getDangerColor(todayCrimes.length, crimes.models.length, duration);
-
-      $("#table-calendar-body tr:last td:last").empty().append(todayCrimes.models.length).css("background", color).click({ "todayCrimes" : todayCrimes, "date" : day.format("YYYY-MM-DD HH:mm:ss") }, function(e) {
-        onDataChange(e.data.todayCrimes, moment( e.data.date ), moment( e.data.date ).add(1, "days"));
-        $("*").removeClass('focus');
-        $(this).addClass('focus');
-      });
-      day.add(1, 'day');
+  for(var d = 0; d < t; d++) {
+    if (d % 7 == 0) {
+      $('#table-calendar-body').append("<tr></tr>");
     }
+
+    $("#table-calendar-body tr:last").append("<td>.</td>");
+
+    if (d - start.weekday() < duration) {
+      if (d > 6) {
+        searchData.date = day;
+        var data = getData();
+        console.log(data);
+        var color = getDangerColor(data.length, crimesData.length, duration);
+        $("#table-calendar-body tr:last td:last").empty().append(data.length).css("background", color).click({"date" : moment(day) }, function(e) {
+          searchData.date = e.data.date;
+          searchData.startTime = null;
+          searchData.endTime = null;
+          onDataChange(getData());
+          updateClock();
+          $("*").removeClass("focus");
+          $(this).addClass("focus");
+        });
+        day.add(1, 'day');
+      }
+      else if (d >= start.weekday())
+      {
+        searchData.date = day;
+        var data = getData();
+        console.log(data);
+
+        var color = getDangerColor(data.length, crimesData.length, duration);
+        $("#table-calendar-body tr:last td:last").empty().append(data.length).css("background", color).click({ "date" : moment(day) }, function(e) {
+          searchData.date = e.data.date;
+          searchData.startTime = null;
+          searchData.endTime = null;
+
+          onDataChange(getData());
+          updateClock();
+                    $("*").removeClass("focus");
+          $(this).addClass("focus");
+
+        });
+        day.add(1, 'day');
+      }
+    }
+  } 
+  searchData.date = null;
+}
+
+makeDropdown = function() {
+  
+  $("#dropdown-police-types").empty();
+  for(var i in policesType) {
+    $("#dropdown-police-types").append("<li><a>" + policesType[i] + "</a></li>");
+    $("#dropdown-police-types li:last").click( { "police" : policesType[i] }, function(e) {
+      searchData.police = e.data.police;
+
+      $("#text-police-type").html(e.data.police);
+      onDataChange(getData());
+    });
   }
-}
+
+
+  
+  $("#dropdown-crime-types").empty();
+  for(var i in crimesType) {
+    $("#dropdown-crime-types").append("<li><a>" + crimesType[i] + "</a></li>");
+    $("#dropdown-crime-types li:last").click( { "crimeType" : crimesType[i] }, function(e) {
+      searchData.crimeType = e.data.crimeType;
+
+      $("#text-crime-type").html(e.data.crimeType);
+      onDataChange(getData());
+    });
+  }
+
 }
 
 
-onDateChange(moment().startOf('month'), moment().endOf('month'));
+
+updateClock = function() {
+  var data = [];
+  var temp = moment().startOf("day");
+  var ctx = $("#clock-chart").get(0).getContext("2d");
+  $('#clock-chart').attr('width', $("#clock").width());
+  $('#clock-chart').attr('height', $("#clock").height());
+  var tempCrimeType = searchData.crimeType;    
+  var tempPolice = searchData.police;
+  searchData.police = "";
+  searchData.crimeType = "";
+
+  var crimes = getData();
+
+  for(var h = 0; h < 24; h++) {
+    searchData.startTime = moment(temp);
+    searchData.endTime = moment(temp).add(1, "hour");
+
+    var nowCrime = getData();
+
+    data.push({ 
+      label : searchData.startTime.format("HH:mm") + " ~ " + searchData.endTime.format("HH:mm") + " " + nowCrime.length + " crimes.", 
+      value : 15, 
+      startTime : searchData.startTime,
+      endTime : searchData.endTime,
+      color : getDangerColor(nowCrime.length, crimes.length, 24), highlight: getDangerColor(nowCrime.length, crimes.length, 24) 
+    });
+    temp.add(1, "hour");
+  }
+  searchData.police = tempPolice;
+  searchData.crimeType = tempCrimeType;
+
+  searchData.startTime = null;
+  searchData.endTime = null;
+
+  ClockChart = new Chart(ctx).Doughnut(data, {
+    animation : false,
+    tooltipTemplate: "<%= label %>",
+  });
+  
+  $("#clock-chart").unbind("click");
+  $("#clock-chart").click( { "datas" : data }, function(evt) {
+    var clickedData = null;
+    var activePoints = ClockChart.getSegmentsAtEvent(evt);
+    for(var i in evt.data.datas) {
+      if (activePoints[0].label == evt.data.datas[i].label) {
+        clickedData = evt.data.datas[i];
+        break;
+      }
+    }
+    var tempCrimeType = searchData.crimeType;    
+    var tempPolice = searchData.police;
+    //searchData.police = "";
+    //searchData.crimeType = "";
+    searchData.startTime = clickedData.startTime;
+    searchData.endTime = clickedData.endTime;
+    onDataChange(getData());
+    //searchData.police = tempPolice;
+    //searchData.crimeType = tempCrimeType;
+
+  });
+}
+
+onDateRangeChange(moment().startOf('month'), moment().endOf('month'));
 
 $('#date-range').daterangepicker( {
   ranges: {
@@ -240,101 +460,33 @@ $('#date-range').daterangepicker( {
  },
  startDate: moment().startOf('month'),
  endDate: moment().endOf('month') 
-}, onDateChange);
+}, onDateRangeChange);
 
+
+dangerColors = [ "#ecff6d", "#fff96d", "#ffdd6d", "#ffbb6d", "#ff946d", "#ff6f6d" ];
 
 getDangerColor = function(count, all, days) {
+  var avr = all / days;
+  var percent = (count - avr) / avr * 100;
+  var processed = Math.round( Math.min( Math.max(-10, percent), 25 ) );
+  processed = Math.round( (processed + 10) / 7 );
+  return dangerColors[processed];
+}
 
-
-
-  var percent = (count - (all / days)) / (all / days) * 100;
-  if (percent < -14)
-    return "#74fff3";
-  else if (percent < 0)
-    return "#47ff7e";
-  else if (percent < 14)
-    return "#34ff00"
-  else if (percent < 28)
-    return "#fff500"
-  else if (percent < 42)
-    return "#ffb200"
-  else if (percent < 56)
-    return "#ff7700"
-  else if (percent < 200)
-    return "#F7464A"
-  else if (percent < 400)
-    return "#ff0000"
-
+getInfoWindowDecs = function(item){
+  return '<div id="content">'+
+  '<div id="siteNotice">'+
+  '</div>'+
+  '<h2 id="firstHeading" class="firstHeading">' + item.get('chrgdesc') + '</h2>'+
+  '<div id="bodyContent">'+
+  '<p>Police Department : '+item.get("agency")+
+  '<br>Address : ' + item.get("street") + " " + item.get("city") + " " + item.get("state")+
+  '<br>Latitude : '+item.get("latitude")+
+  '<br>Longitude : '+item.get("longitude")+
+  '</p>'+
+  '</div>'+
+  '</div>';
 }
 
 
-  getInfoWindowDecs = function(item){
-    return '<div id="content">'+
-        '<div id="siteNotice">'+
-        '</div>'+
-        '<h2 id="firstHeading" class="firstHeading">' + item.get('chrgdesc') + '</h2>'+
-        '<div id="bodyContent">'+
-        '<p>Police Department : '+item.get("agency")+
-        '<br>Address : ' + item.get("street") + " " + item.get("city") + " " + item.get("state")+
-        '<br>Latitude : '+item.get("latitude")+
-        '<br>Longitude : '+item.get("longitude")+
-        '</p>'+
-        '</div>'+
-        '</div>';
-  }
-
- /*
- f30200
-ff7700
-ffb200
-fff500
-34ff00
-47ff7e
-74fff3
-*/
-var data = [
-{label: "23:00-24:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "22:00-23:00", value: 15, color:"#ff7700", highlight: "#FF5A5E"},
-{label: "21:00-22:00", value: 15, color:"#ffb200", highlight: "#FF5A5E"},
-{label: "20:00-21:00", value: 15, color:"#fff500", highlight: "#FF5A5E"},
-{label: "19:00-20:00", value: 15, color:"#34ff00", highlight: "#FF5A5E"},
-{label: "18:00-19:00", value: 15, color:"#47ff7e", highlight: "#FF5A5E"},
-{label: "17:00-18:00", value: 15, color:"#74fff3", highlight: "#FF5A5E"},
-
-{label: "16:00-17:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "15:00-16:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "14:00-15:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "13:00-14:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "12:00-13:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "11:00-12:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "10:00-11:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "09:00-10:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "08:00-09:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "07:00-08:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "06:00-07:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "05:00-06:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "04:00-05:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "03:00-04:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "02:00-03:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "01:00-02:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"},
-{label: "00:00-01:00", value: 15, color:"#F7464A", highlight: "#FF5A5E"}
-];
-
-
-var c = $('#clock-chart');
-var ctx = $("#clock-chart").get(0).getContext("2d");
-c.attr('width', $("#clock").width());
-c.attr('height', $("#clock").height());
-
-ClockChart = new Chart(ctx).Doughnut(data, {
-  animation : false,
-  tooltipTemplate: "<%= label %>"
 });
-
-   // $(window).resize(resizeClock);
-
-    //resizeClock(); 
-
-
-
-  });

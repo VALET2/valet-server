@@ -37,7 +37,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'backbone',
-    'crimes',
     'rest_framework',
     'purduecrime',
 )

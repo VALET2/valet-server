@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -21,6 +21,9 @@ def crime_detail(request, crime_id):
 def crime_collection(request):
 
     if request.method == 'GET':
+
+        if not request.user.is_authenticated():
+            return redirect(request, '/login', {'form':form})
 
         query_params = request.query_params
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .loginform import LoginForm
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 
 def valet_home(request):
     if request.method == 'GET':
@@ -19,6 +19,6 @@ def valet_home(request):
                 login(request, user)
                 return render(request, 'index.html') 
             else:
-                return render('account_disabled.html')
+                return render(request, 'account_disabled.html')
         else:
-            return render('wrong_login.html')
+            return render(request, 'wrong_login.html')

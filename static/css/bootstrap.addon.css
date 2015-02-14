@@ -325,9 +325,16 @@
       font-size: 11px;
     text-align: center;
 }
-.table-nonfluid td.focus {
-  border: 3px solid #111;
-  font-size: 12px;
-  font-weight: bold;
+
+#table-calendar-body tr > td {
+    border: 0px;
 }
+#table-calendar-body tr > td.focus{
+  padding: 4px;
+  font-size: 14px;
+  font-weight: bold;
+  background: 
+ 
+}
+
 

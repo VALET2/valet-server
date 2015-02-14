@@ -92,27 +92,19 @@
               <div class="btn-group btn-block">
                 <button type="button" class="btn btn-default btn-block dropdown-toggle" data-toggle="dropdown">
                   <span class="col-lg-12">
-                    Crime Type <span class="caret"></span>
+                    <a id="text-crime-type">Crime Type</a> <span class="caret"></span>
                   </span>
                 </button>
-                <ul class="dropdown-menu btn-block" role="menu">
-                  <li><a href="#">Action</a></li>
-                  <li><a href="#">Another action</a></li>
-                  <li><a href="#">Something else here</a></li>
-                  <li><a href="#">Separated link</a></li>
+                <ul class="dropdown-menu" role="menu" id="dropdown-crime-types">
                 </ul>
               </div>
               <div class="btn-group btn-block">
                 <button type="button" class="btn btn-default btn-block dropdown-toggle" data-toggle="dropdown">
                   <span class="col-lg-12">
-                    Police Department <span class="caret"></span>
+                    <a id="text-police-type">Police Department</a> <span class="caret"></span>
                   </span>
                 </button>
-                <ul class="dropdown-menu btn-block" role="menu">
-                  <li><a href="#">Action</a></li>
-                  <li><a href="#">Another action</a></li>
-                  <li><a href="#">Something else here</a></li>
-                  <li><a href="#">Separated link</a></li>
+                <ul class="dropdown-menu btn-block" role="menu" id="dropdown-police-types">
                 </ul>
               </div>
               <div class="checkbox">
@@ -146,8 +138,12 @@
       <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js" type="text/javascript"></script>
       <script src="http://underscorejs.org/underscore.js" type="text/javascript"></script>
       <script src="http://backbonejs.org/backbone.js" type="text/javascript"></script>
+
+      
       <script src="{% static 'js/bootstrap.min.js' %}" type="text/javascript"></script>       
       <script src="{% static 'js/bootstrap.addon.js' %}" type="text/javascript"></script>
+                  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-range/1.0.5/moment-range.min.js" type="text/javascript"></script>
+
       <script src="http://www.chartjs.org/assets/Chart.js"></script> 
       <script src="{% static 'js/crime.js' %}" type="text/javascript"></script>
     </body>

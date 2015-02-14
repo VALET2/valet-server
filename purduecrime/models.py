@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.utils import timezone
 
@@ -24,3 +25,9 @@ class Crime(models.Model):
 
     class Meta:
         db_table = 'valet_VIEW'
+
+
+class PredictionImage(models.Model):
+
+    date = models.DateTimeField(primary_key=True)
+    predictionImg = models.FileField()

@@ -1,0 +1,12 @@
+<html>
+
+<body>
+  <h2>Upload Prediction Image for VALET-WEB</h2>
+  <form enctype="multipart/form-data" method="post" action=".">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Upload">
+  </form>
+</body>
+
+</html>

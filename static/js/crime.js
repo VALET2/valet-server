@@ -380,7 +380,7 @@ onDataChange = function(crimes) {
     var crimeTypeMarker = new google.maps.Marker({
       position : position,
       map : map,
-      icon : crimeIconDict[ item.get('chrgdesc')  ],
+      icon : iconBase + crimeDict[ item.get('chrgdesc')  ] +".png",
     });
 
     var infowindow = new google.maps.InfoWindow({

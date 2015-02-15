@@ -595,3 +595,46 @@ getInfoWindowDecs = function(item){
 
 
 });
+
+$(document).ready( function(){
+
+  $('#compare-img-map').on('click', function(){
+
+    if ( $('#prediction-map').length != 0) {
+      $('#map-canvas').removeClass('col-md-6');
+      $('#prediction-map').remove();
+      google.maps.event.trigger(map, 'resize');
+      map.setCenter(new google.maps.LatLng(40.418641, -86.892279));
+      map.setZoom(13);
+    }
+    else {
+
+      var time = new Date();
+      var year = time.getFullYear();
+      var month = time.getMonth()+1;
+      var date = time.getDate();
+
+      if( month < 10 ) month = "0" + month;
+      if( date < 10 ) date = "0" + date;
+
+      var dateString = year + '-' + month + '-' + date + ".jpg";
+      img = $('<div class="col-md-6"><img src="' + "/static/prediction/" + dateString + '" id="prediction-map" style="height:450px"/></div>');
+
+      mapHtml = $('#map-canvas');
+      mapHtml.addClass('col-md-6');
+      mapHtml.parent().append(img);
+
+      google.maps.event.trigger(map, "resize");
+      map.setCenter(new google.maps.LatLng(40.418641, -86.892279));
+      map.setZoom(12);
+
+    }
+
+  });
+
+  $('#map-canvas').resize( function() {
+    console.log("resizing");
+    google.maps.event.trigger(map, "resize");
+  });
+
+});

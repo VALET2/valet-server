@@ -33,7 +33,7 @@
                 <a href="#">Crimes</a>
               </li>
               <li>
-                <a href="#">Prediction</a>
+                <p class="btn navbar-btn" id="compare-img-map">Prediction</p>
               </li>
             </ul>
             <p class="navbar-text navbar-right"><a href="/user/logout/?next=/" class="navbar-link">Sign out</a></p>
@@ -45,7 +45,9 @@
         </div>
       </nav>
 
-      <div id="map-canvas" style="height:450px">
+      <div class="col-md-12">
+        <div id="map-canvas" style="height:450px">
+        </div>
       </div>
 
       <div class="container">
@@ -146,6 +148,7 @@
 
       <script src="http://www.chartjs.org/assets/Chart.js"></script> 
       <script src="{% static 'js/crime.js' %}" type="text/javascript"></script>
+      
     </body>
     </html>
 

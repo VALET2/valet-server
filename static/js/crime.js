@@ -650,7 +650,7 @@ $(document).ready( function(){
       if( date < 10 ) date = "0" + date;
 
       var dateString = year + '-' + month + '-' + date + ".jpg";
-      img = $('<div class="col-md-6"><img src="' + "/static/prediction/" + dateString + '" id="prediction-map" style="height:450px"/></div>');
+      img = $('<div class="col-md-6" style="overflow: scroll;"><img src="' + "/static/prediction/" + dateString + '" id="prediction-map" style="height: 450px;"/></div>');
 
       mapHtml = $('#map-canvas');
       mapHtml.addClass('col-md-6');
@@ -664,9 +664,6 @@ $(document).ready( function(){
 
   });
 
-  $('#map-canvas').resize( function() {
-    google.maps.event.trigger(map, "resize");
-  });
 });
 
   var cSpeed=9;

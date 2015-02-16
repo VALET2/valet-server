@@ -16,6 +16,7 @@
       <![endif]-->
     </head>
     <body>
+      <div id="loaderImage" style="position:fixed; margin-top:23%; margin-left:45%; z-index:999"></div>
       <nav class="navbar navbar-default">
         <div class="container">
           <div class="navbar-header">
@@ -84,6 +85,10 @@
             <div id="clock" class="panel-body">
               <canvas id="clock-chart">
               </canvas>
+                <button id="btn-time-reset" class="btn btn-sm btn-default btn-block">
+                  <i class="glyphicon glyphicon-refresh"></i> Time Reset
+                </button>
+
             </div>
           </div>
         </div>
@@ -111,13 +116,13 @@
               </div>
               <div class="checkbox">
                 <label>
-                  <input type="checkbox" value="">
+                  <input id="input-hide-marker" type="checkbox" value="">
                   Hide Map Marker.
                 </label>        
               </div>   
               <div class="checkbox">     
                 <label>
-                  <input type="checkbox" value="">
+                  <input id="input-hide-heatmap" type="checkbox" value="">
                   Hide Heatmap.
                 </label>
               </div>

@@ -219,8 +219,6 @@ $(function() {
    "model" : crimeModel,
    "byDate" : function(value) {
     var filtered = this.filter(function(crime) {
-      //console.log(crime);
-      //console.log(value)
       return value.format("YYYY-MM-DD") === crime.get("date_occu").split("T")[0];
     });
     return new crimeCollection(filtered);
@@ -293,13 +291,14 @@ onDateRangeChange = function(start, end) {
   });
 }
 
-var crimeTypeMarkers = [];
+crimeTypeMarkers = [];
 var crimePoints = [];
 var latestPosition = null;
-var crimesType = [];
-var policesType = [];
+var crimesType = ["ALL"];
+var policesType = ["ALL"];
 
 getData = function(callback) {
+
   var self = this;
   if (searchData.startDate != null && searchData.endDate != null) {
 
@@ -312,20 +311,23 @@ getData = function(callback) {
       if (searchData.startTime != null && searchData.endTime != null)
         crimes = crimes.rangeTime(searchData.startTime, searchData.endTime);
 
-      if (searchData.crimeType != "")
+      if (searchData.crimeType != "" && searchData.crimeType != "ALL")
         crimes = crimes.byType("chrgdesc", searchData.crimeType);
 
-      if (searchData.police != "")
+      if (searchData.police != "" && searchData.crimeType != "ALL")
         crimes = crimes.byType("agency", searchData.police);
 
       return crimes;
     }
 
     if (searchData.oldStartDate.diff(searchData.startDate) || searchData.oldEndDate.diff(searchData.endDate)) {
+      startAnimation();
       crimesData.fetch( {
         success : function() {       
           searchData.oldStartDate = moment(searchData.startDate);
           searchData.oldEndDate = moment(searchData.endDate);
+          crimesType = ["ALL"]
+          policesType = ["ALL"]
           crimesData.each(function(item) {
             var hasCrimeType = false;
             for(var i in crimesType) {
@@ -345,6 +347,7 @@ getData = function(callback) {
           });
           makeDropdown();
           callback(search());
+          stopAnimation();
         }, 
         data : { 
           "startdate" : searchData.startDate.format('YYYY-MM-DD'), 
@@ -359,7 +362,7 @@ getData = function(callback) {
 };
 
 onDataChange = function(crimes) {
-  if (crimeTypeMarkers.length != 0) {
+  if (crimeTypeMarkers.length > 0) {
     for (var i = 0 ; i < crimeTypeMarkers.length; i++) {
       crimeTypeMarkers[i].setMap(null);
     }
@@ -367,7 +370,8 @@ onDataChange = function(crimes) {
 
   crimePoints = [];
   crimeTypeMarkers = [];
-
+  $('#input-hide-marker').attr("checked", false);
+  $('#input-hide-heatmap').attr("checked", false);
 
 
   if (typeof heatmap != "undefined")
@@ -425,7 +429,6 @@ updateCalendar = function(start, end) {
       if (d > 6) {
         searchData.date = day;
         var data = getData();
-        console.log(data);
         var color = getDangerColor(data.length, crimesData.length, duration);
         $("#table-calendar-body tr:last td:last").empty().append(data.length).css("background", color).click({"date" : moment(day) }, function(e) {
           searchData.date = e.data.date;
@@ -442,8 +445,6 @@ updateCalendar = function(start, end) {
       {
         searchData.date = day;
         var data = getData();
-        console.log(data);
-
         var color = getDangerColor(data.length, crimesData.length, duration);
         $("#table-calendar-body tr:last td:last").empty().append(data.length).css("background", color).click({ "date" : moment(day) }, function(e) {
           searchData.date = e.data.date;
@@ -552,6 +553,13 @@ updateClock = function() {
   });
 }
 
+
+$("#btn-time-reset").click(function() {
+    searchData.startTime = null;
+    searchData.endTime = null;
+    onDataChange(getData());
+});
+
 onDateRangeChange(moment().startOf('month'), moment().endOf('month'));
 
 $('#date-range').daterangepicker( {
@@ -596,6 +604,30 @@ getInfoWindowDecs = function(item){
 
 });
 
+$('#input-hide-marker').change(function() {
+  if (crimeTypeMarkers.length > 0) {
+    for (var i = 0 ; i < crimeTypeMarkers.length; i++) {
+      if ($(this).is(":checked")) {
+        crimeTypeMarkers[i].setMap(null);
+      } else {
+        crimeTypeMarkers[i].setMap(map);
+      }
+    }
+  }
+
+});
+
+$('#input-hide-heatmap').change(function() {
+  if (typeof heatmap != "undefined") {
+    if ($(this).is(":checked")) {
+      heatmap.setMap(null);
+    } else {
+      heatmap.setMap(map);
+    }
+  }
+});
+
+
 $(document).ready( function(){
 
   $('#compare-img-map').on('click', function(){
@@ -633,8 +665,76 @@ $(document).ready( function(){
   });
 
   $('#map-canvas').resize( function() {
-    console.log("resizing");
     google.maps.event.trigger(map, "resize");
   });
-
 });
+
+  var cSpeed=9;
+  var cWidth=100;
+  var cHeight=107;
+  var cTotalFrames=29;
+  var cFrameWidth=100;
+  var cImageSrc='/static/img/sprites.gif';
+  
+  var cImageTimeout=false;
+  var cIndex=0;
+  var cXpos=0;
+  var cPreloaderTimeout=false;
+  var SECONDS_BETWEEN_FRAMES=1;
+  
+  function startAnimation(){
+    
+    document.getElementById('loaderImage').style.backgroundImage='url('+cImageSrc+')';
+    document.getElementById('loaderImage').style.width=cWidth+'px';
+    document.getElementById('loaderImage').style.height=cHeight+'px';
+    $("#loaderImage").show();
+    
+    //FPS = Math.round(100/(maxSpeed+2-speed));
+    FPS = Math.round(100/cSpeed);
+    SECONDS_BETWEEN_FRAMES = 1 / FPS;
+    
+    cPreloaderTimeout=setTimeout('continueAnimation()', SECONDS_BETWEEN_FRAMES/1000);
+    
+  }
+  
+  function continueAnimation(){
+    
+    cXpos += cFrameWidth;
+    //increase the index so we know which frame of our animation we are currently on
+    cIndex += 1;
+     
+    //if our cIndex is higher than our total number of frames, we're at the end and should restart
+    if (cIndex >= cTotalFrames) {
+      cXpos =0;
+      cIndex=0;
+    }
+    
+    if(document.getElementById('loaderImage'))
+      document.getElementById('loaderImage').style.backgroundPosition=(-cXpos)+'px 0';
+    
+    cPreloaderTimeout=setTimeout('continueAnimation()', SECONDS_BETWEEN_FRAMES*1000);
+  }
+  
+  function stopAnimation(){//stops animation
+    clearTimeout(cPreloaderTimeout);
+    cPreloaderTimeout=false;
+    $("#loaderImage").hide();
+  }
+  
+  function imageLoader(s, fun)//Pre-loads the sprites image
+  {
+    clearTimeout(cImageTimeout);
+    cImageTimeout=0;
+    genImage = new Image();
+    genImage.onload=function (){cImageTimeout=setTimeout(fun, 0)};
+    genImage.onerror=new Function('alert(\'Could not load the image\')');
+    genImage.src=s;
+  }
+  
+  //The following code starts the animation
+  new imageLoader(cImageSrc, 'startAnimation()');
+
+
+
+
+

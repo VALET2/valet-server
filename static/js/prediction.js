@@ -64,7 +64,7 @@ $(document).ready( function(){
   datePicker = $('.datepicker').datetimepicker({
     defaultDate: predictionDate,
     format: 'MM-DD-YYYY HH:00',
-    sideBySide: true
+    collapse: false
   }).on('dp.change', function(ev){
     console.dir(ev);
     predictionDate = ev.date;

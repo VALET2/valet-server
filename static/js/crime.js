@@ -241,6 +241,16 @@ $(function() {
       return crime.get(type) == value;
     });
     return new crimeCollection(filtered);
+  },
+
+  "byTypeArray" : function(type, array) {
+    var filtered = this.filter(function(crime) {
+      for(var i in array) {
+        if (crime.get(type) == array[i])
+          return true;
+      }
+    });
+    return new crimeCollection(filtered);
 
   },
   "rangeToPosition" : function(lat, lng, lat2, lng2) {
@@ -267,10 +277,10 @@ searchData = {
   date : null,
   startTime : null,  
   endTime : null,
-  crimeType : "",
-  police : ""
+  crimeType : [],
+  police : []
 }
-
+// 없을 경우에
 crimesData = new crimeCollection();
 
 onDateRangeChange = function(start, end) {
@@ -279,8 +289,8 @@ onDateRangeChange = function(start, end) {
   searchData.date = null;
   searchData.startTime = null; 
   searchData.endTime = null;
-  searchData.crimeType = "";
-  searchData.police = "";
+  searchData.crimeType = [];
+  searchData.police = [];
 
 
   $('#date-range span').html(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
@@ -294,8 +304,8 @@ onDateRangeChange = function(start, end) {
 crimeTypeMarkers = [];
 var crimePoints = [];
 var latestPosition = null;
-var crimesType = ["ALL"];
-var policesType = ["ALL"];
+var crimesType = []
+var policesType = [];
 
 getData = function(callback) {
 
@@ -311,12 +321,15 @@ getData = function(callback) {
       if (searchData.startTime != null && searchData.endTime != null)
         crimes = crimes.rangeTime(searchData.startTime, searchData.endTime);
 
-      if (searchData.crimeType != "" && searchData.crimeType != "ALL")
-        crimes = crimes.byType("chrgdesc", searchData.crimeType);
+      if (searchData.crimeType.length > 0){
+        crimes = crimes.byTypeArray("chrgdesc", searchData.crimeType);
+      }
 
-      if (searchData.police != "" && searchData.crimeType != "ALL")
-        crimes = crimes.byType("agency", searchData.police);
-      console.log(crimes.length);
+      if (searchData.police.length > 0){
+        crimes = crimes.byTypeArray("agency", searchData.police);
+        
+      }
+        
       return crimes;
     }
 
@@ -326,8 +339,8 @@ getData = function(callback) {
         success : function() {       
           searchData.oldStartDate = moment(searchData.startDate);
           searchData.oldEndDate = moment(searchData.endDate);
-          crimesType = ["ALL"]
-          policesType = ["ALL"]
+          crimesType = []
+          policesType = []
           crimesData.each(function(item) {
             var hasCrimeType = false;
             for(var i in crimesType) {
@@ -463,28 +476,40 @@ updateCalendar = function(start, end) {
 }
 
 makeDropdown = function() {
-  
+
   $("#dropdown-police-types").empty();
+
   for(var i in policesType) {
-    $("#dropdown-police-types").append("<li><a>" + policesType[i] + "</a></li>");
-    $("#dropdown-police-types li:last").click( { "police" : policesType[i] }, function(e) {
-      searchData.police = e.data.police;
-      $("#text-police-type").html(e.data.police);
-      onDataChange(getData());
-    });
-  }
+          $("#dropdown-police-types").append("<option id='"  + policesType[i] + "'>"  + policesType[i] + "</option>");
+}
 
-
-  
   $("#dropdown-crime-types").empty();
+
   for(var i in crimesType) {
-    $("#dropdown-crime-types").append("<li><a>" + crimesType[i] + "</a></li>");
-    $("#dropdown-crime-types li:last").click( { "crimeType" : crimesType[i] }, function(e) {
-      searchData.crimeType = e.data.crimeType;
-      $("#text-crime-type").html(e.data.crimeType);
-      onDataChange(getData());
-    });
-  }
+          $("#dropdown-crime-types").append("<option id='"  + crimesType[i] + "'>" +  crimesType[i] + "</option>");
+}
+
+  $("#dropdown-crime-types").select2();
+  $("#dropdown-crime-types").on("select2:select", function (e) {
+    console.log(searchData.crimeType);
+    searchData.crimeType.push(e.params.data.text);
+    onDataChange(getData());
+  });
+  $("#dropdown-crime-types").on("select2:unselect", function (e) {
+   searchData.crimeType = arrayRemove(searchData.crimeType, e.params.data.text);
+    onDataChange(getData());
+  });
+
+  $("#dropdown-police-types").select2();
+    $("#dropdown-police-types").on("select2:select", function (e) {
+    searchData.police.push(e.params.data.text);
+    onDataChange(getData());
+      });
+  $("#dropdown-police-types").on("select2:unselect", function (e) {
+     searchData.police = arrayRemove(searchData.police, e.params.data.text);
+    onDataChange(getData());
+
+  });
 
 }
 
@@ -494,10 +519,10 @@ updateClock = function() {
   var ctx = $("#clock-chart").get(0).getContext("2d");
   $('#clock-chart').attr('width', $("#clock").width());
   $('#clock-chart').attr('height', $("#clock").height());
-  var tempCrimeType = searchData.crimeType;    
-  var tempPolice = searchData.police;
-  searchData.police = "";
-  searchData.crimeType = "";
+  var tempCrimeType = $.extend(true, [], searchData.crimeType);    
+  var tempPolice = $.extend(true, [], searchData.police);
+  searchData.police = [];
+  searchData.crimeType = [];
 
   var crimes = getData();
 
@@ -537,16 +562,10 @@ updateClock = function() {
         break;
       }
     }
-    var tempCrimeType = searchData.crimeType;    
-    var tempPolice = searchData.police;
-    //searchData.police = "";
-    //searchData.crimeType = "";
+
     searchData.startTime = clickedData.startTime;
     searchData.endTime = clickedData.endTime;
     onDataChange(getData());
-    //searchData.police = tempPolice;
-    //searchData.crimeType = tempCrimeType;
-
   });
 }
 
@@ -691,5 +710,22 @@ $('#input-hide-heatmap').change(function() {
 
 
 
-
+var arrayRemove = function (arr, value) {
+  if ([].indexOf) {
+    remove = function (arr, value) {  // IE9 이상, 모든 브라우져인 경우 아래 함수로 재설정
+      while((i = arr.indexOf(value)) !== -1) { //해당 값이 arr에 있는 동안 루프
+        arr.splice(i, 1); 
+      }
+    }
+  } else {
+    remove = function (arr, value) { // IE8이하인 경우 아래의 함수로 재설정
+      for (i = arr.length; i--;) {  //뒤에서부터 배열을 탐색
+        if (arr[i] === value) {
+          arr.splice(i, 1);
+        }
+      }
+    }
+  }
+  remove(arr, value); // 재설정된 함수로 다시 호출
+}
 

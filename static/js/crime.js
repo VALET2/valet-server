@@ -207,10 +207,6 @@ crimeIconDict = {
   "Vehicle Recovery" : iconBase + 'Traffic.png',
 };
 
-$(function () {
-  $('[data-toggle="popover"]').popover()
-})
-
 $(function() {
 
   crimeModel = Backbone.Model.extend({
@@ -491,8 +487,6 @@ makeDropdown = function() {
   }
 
 }
-
-
 
 updateClock = function() {
   var data = [];

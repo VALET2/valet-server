@@ -12,7 +12,12 @@ $(document).ready( function(){
       map.setCenter(new google.maps.LatLng(40.418641, -86.892279));
       map.setZoom(13);
 
-      $('.disable-on-prediction').prop('disabled',false);
+      $('.prediction-panel').removeClass('col-md-offset-4');
+      $('.prediction-panel').removeClass('col-md-4');
+      $('.prediction-panel').addClass('col-md-3');
+
+      // $('.disable-on-prediction').prop('disabled',false);
+      $('.hide-on-prediction').show();
 
       searchData = searchBeforePrediction;
 
@@ -49,11 +54,16 @@ $(document).ready( function(){
       mapHtml.addClass('col-md-6');
       mapHtml.parent().append(img);
 
+      $('.prediction-panel').addClass('col-md-offset-4');
+      $('.prediction-panel').addClass('col-md-4');
+      $('.prediction-panel').removeClass('col-md-3');
+
       google.maps.event.trigger(map, "resize");
       map.setCenter(new google.maps.LatLng(40.418641, -86.892279));
       map.setZoom(12);
 
-      $('.disable-on-prediction').prop('disabled',true);
+      // $('.disable-on-prediction').prop('disabled',true);
+      $('.hide-on-prediction').hide();
 
     }
 

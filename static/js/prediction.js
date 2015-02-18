@@ -73,6 +73,7 @@ $(document).ready( function(){
   });
 
   predictionDate = new moment();
+  predictionDate.set('minute',00);
 
   $("#input-prediction-date").click(function(e){
       searchData.startDate = predictionDate;

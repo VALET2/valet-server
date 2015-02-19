@@ -129,6 +129,7 @@ $(document).ready( function(){
 
   datePicker = $('.datepicker').datetimepicker({
     defaultDate: predictionDate,
+    showTodayButton: true,
     format: 'MM-DD-YYYY HH:00',
     collapse: false
   }).on('dp.change', function(ev){

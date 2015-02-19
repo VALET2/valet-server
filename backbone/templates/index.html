@@ -61,26 +61,26 @@
 
                 <input class="form-control datepicker" placeholder="Choose Date"/>
                 <span class="input-group-btn">
-                  <button id="input-prediction-date" type="button" class="btn btn-default">Submit</button>
+                  <button id="input-prediction-date" type="button" class="btn btn-default">Predict</button>
                 </span>
               </div>
               <div class="input-group" style="margin-top: 5px;">
                 <span class="input-group-addon">
-                  <input name="crime-type-radio" type="radio" >
+                  <input name="crime-type-radio" type="radio" value="High" >
                 </span>
-                <input type="text" class="form-control"  value="Violent Crimes" disabled/>
+                <input type="text" class="form-control"  value="High" disabled/>
               </div>
               <div class="input-group" style="margin-top: 5px;">
                 <span class="input-group-addon">
-                  <input name="crime-type-radio" type="radio" >
+                  <input name="crime-type-radio" type="radio" value="Moderate">
                 </span>
-                <input type="text" class="form-control"  value="Buglary" disabled/>
+                <input type="text" class="form-control"  value="Moderate" disabled/>
               </div>
               <div class="input-group" style="margin-top: 5px;">
                 <span class="input-group-addon">
-                  <input name="crime-type-radio" type="radio" >
+                  <input name="crime-type-radio" type="radio" value="Low" >
                 </span>
-                <input type="text" class="form-control"  value="Noise" disabled/>
+                <input type="text" class="form-control"  value="Low" disabled/>
               </div>
             </div>
           </div>
@@ -127,7 +127,7 @@
         <div class="panel panel-default">
           <div class="panel-heading">Type</div>
           <div class="panel-body">
-           
+
             <label for="dropdown-crime-types">Crime Type</label> <span class="caret"></span></label>
 
             <select id="dropdown-crime-types" class="col-md-12" multiple="multiple">
@@ -159,7 +159,7 @@
       <div class="container">
         <div class="row">
           <div class="col-md-12">
-            <p>Database in CrimeReport<br>Copyright © 2015 <a>Software Maestro</a> & <a>Purdue University</a></p>
+            <p><br>Copyright © 2015 <a>Software Maestro</a> & <a>Purdue University</a></p>
           </div>
         </div>
 
@@ -180,6 +180,7 @@
       <script src="http://www.chartjs.org/assets/Chart.js"></script> 
       <script src="{% static 'js/crime.js' %}" type="text/javascript"></script>
       <script src="{% static 'js/prediction.js' %}" type="text/javascript"></script>
+      <script src="{% static 'js/preset.js' %}" type="text/javascript"></script>
       
     </body>
     </html>

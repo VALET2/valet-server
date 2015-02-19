@@ -105,7 +105,7 @@ getData = function(callback) {
 
   var self = this;
   if (searchData.startDate != null && searchData.endDate != null) {
-
+    // Using the Data on the memory
     var search = function() {
       var crimes = crimesData;
 
@@ -128,6 +128,7 @@ getData = function(callback) {
     }
 
     if (searchData.oldStartDate.diff(searchData.startDate) || searchData.oldEndDate.diff(searchData.endDate)) {
+      // Calling the PurdueCrime application for new CrimesData
       startAnimation();
       crimesData.fetch( {
         success : function() {       
@@ -187,6 +188,7 @@ onDataChange = function(crimes) {
     var position = new google.maps.LatLng(item.get("latitude"), item.get("longitude"));
     crimePoints.push(position);
 
+    // Puts Markers on the Map
     var crimeTypeMarker = new google.maps.Marker({
       position : position,
       map : map,
@@ -200,6 +202,7 @@ onDataChange = function(crimes) {
     crimeTypeMarkers.push(crimeTypeMarker);
     google.maps.event.addListener(crimeTypeMarker, 'click', function (e) {
       infowindow.open(map, crimeTypeMarker);
+      // close the InfoWindow at the Second click
       if (e.latLng == latestPosition) {
         infowindow.close();
         latestPosition = null;
@@ -212,6 +215,7 @@ onDataChange = function(crimes) {
     data : new google.maps.MVCArray(crimePoints)
   });
 
+  // customizeable Color, Radius, Opacity Settings
   heatmap.set('radius', heatmap.get('radius') ? null : 50);
   heatmap.set('opacity', heatmap.get('opacity') ? null : 0.5);
   heatmap.setMap(heatmap.getMap() ? null : map);

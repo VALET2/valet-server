@@ -41,8 +41,6 @@ $(document).ready( function(){
     if ( $('#prediction-map').length != 0) {
 
       changeSearchData(searchBeforePrediction);
-      console.log("searchBeforePrediction");
-      console.dir(searchBeforePrediction);
 
     }
     else {
@@ -91,7 +89,11 @@ $(document).ready( function(){
       var img = $('<div class="col-md-6">' + 
                   '<img class="img-responsive" src="' + 
                   "/static/prediction/" + 
-                  getDateInFormat($('input:checked').val()) + '" id="prediction-map" style="height:450px;"/></div>'); 
+                  
+                  getDateInFormat($('input:checked').val()) +
+
+                  '" id="prediction-map" style="height:450px;"/></div>'); 
+      
       img.css('height', mapHtml.height());
       mapHtml.parent().append(img);
 
@@ -106,11 +108,11 @@ $(document).ready( function(){
 
   // make src string in format Predict_YYYY-MM-DD_HH00_Cat1.jpg
   getDateInFormat = function(risk) {
-    var year = predictionDate.year();
-    var month = predictionDate.month()+1;
-    var date = predictionDate.date();
-    var hour = predictionDate.get('hour');
-    var minute = predictionDate.get('minute');
+    var year = predictionDate.year(); // YYYY
+    var month = predictionDate.month()+1; // MM 0~11
+    var date = predictionDate.date(); // DD
+    var hour = predictionDate.get('hour'); // HH
+    var minute = predictionDate.get('minute'); // mm
 
     if( month < 10 ) month = "0" + month;
     if( date < 10 ) date = "0" + date;

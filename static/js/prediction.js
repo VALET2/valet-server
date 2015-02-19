@@ -3,10 +3,8 @@ $(document).ready( function(){
   searchBeforePrediction = {};
 
   $('#compare-img-map').on('click', function(){
-
     loadDataForPrediction();
     renderView();
-
   });
 
   predictionDate = new moment();
@@ -15,13 +13,11 @@ $(document).ready( function(){
   $("#input-prediction-date").click(function(e){
     
     changeSearchData({
-
         police : [],
         crimeType : crimeRiskDict[$('input:checked').val()],
         date : predictionDate
         // startDate : predictionDate,
         // endDate : predictionDate
-
     });
     console.log("Searching Data...");
     console.dir(searchData);
@@ -40,12 +36,12 @@ $(document).ready( function(){
 
     if ( $('#prediction-map').length != 0) {
 
-      changeSearchData(searchBeforePrediction);
-      console.log("searchBeforePrediction");
+      searchData = $.extend(true, {}, searchBeforePrediction);
       console.dir(searchBeforePrediction);
-
+      onDataChange(getData());
     }
     else {
+      searchBeforePrediction = $.extend(true, {}, searchData);
 
       changeSearchData({
 
@@ -57,7 +53,6 @@ $(document).ready( function(){
 
       });
       console.dir(searchData);
-      searchBeforePrediction = $.extend(true, {}, searchData);
 
     }
 
@@ -91,9 +86,15 @@ $(document).ready( function(){
       var img = $('<div class="col-md-6">' + 
                   '<img class="img-responsive" src="' + 
                   "/static/prediction/" + 
-                  getDateInFormat($('input:checked').val()) + '" id="prediction-map" style="height:450px;"/></div>'); 
-      img.css('height', mapHtml.height());
+                  getDateInFormat($('input:checked').val()) + '" id="prediction-map"/></div>'); 
+
       mapHtml.parent().append(img);
+      $("#prediction-map").css('width', "100%");      
+      $("#prediction-map").css('height', mapHtml.height());   
+
+      $("#prediction-map").error(function() {
+        $(this).attr("src", "/static/img/error_predict.jpg");
+      })
 
       google.maps.event.trigger(map, "resize");
       map.setCenter(new google.maps.LatLng(40.418641, -86.892279));
@@ -130,7 +131,8 @@ $(document).ready( function(){
   datePicker = $('.datepicker').datetimepicker({
     defaultDate: predictionDate,
     showTodayButton: true,
-    format: 'MM-DD-YYYY HH:00',
+    format: 'MM-DD-YYYY',
+    keepOpen: false,
     collapse: false
   }).on('dp.change', function(ev){
       predictionDate = moment(ev.date);

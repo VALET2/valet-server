@@ -10,7 +10,6 @@
   <link href="{% static 'css/bootstrap.addon.css' %}" rel="stylesheet">
   <link href="{% static 'css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet">
   <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=visualization&key=AIzaSyCUlkpOqj-EgdBIlnP4WXIlAIqbZhg26Ic"></script>
-
     <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -47,7 +46,7 @@
         </div>
       </nav>
       <div class="row">
-       <div id="map-canvas" style="height:450px">
+       <div id="map-canvas" class="col-md-12" style="height:450px">
        </div>
      </div>
      <div class="container">
@@ -107,6 +106,9 @@
               <tbody id="table-calendar-body">
               </tbody>
             </table>
+            <button id="btn-date-reset" class="btn btn-sm btn-default btn-block" style="margin-top:5px;">
+              <i class="glyphicon glyphicon-refresh"></i> Date Reset
+            </button>
           </div>
         </div>
       </div>
